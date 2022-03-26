@@ -1,7 +1,7 @@
 
 import * as _ from 'lodash';
-import {LESSONS, USERS} from "./database-data";
-import {DbUser} from "./db-user";
+import { LESSONS, USERS } from "./database-data";
+import { DbUser } from "./db-user";
 
 
 class InMemoryDatabase {
@@ -13,7 +13,7 @@ class InMemoryDatabase {
     }
 
 
-    createUser(email:string,password:string) {
+    createUser(email: string, password: string) {
 
         this.userCounter++;
 
@@ -22,7 +22,7 @@ class InMemoryDatabase {
         const user: DbUser = {
             id,
             email,
-            password
+            passwordDigest: password
         };
 
         USERS[id] = user;
