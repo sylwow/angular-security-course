@@ -5,7 +5,9 @@ export async function retreiveUserIdFromRequest(req: Request, res: Response, nex
   const jwt = req.cookies["SESSIONID"];
 
   if (jwt) {
-    handleSessionCookie(jwt, req).then(_ => next());
+    handleSessionCookie(jwt, req)
+      .then(_ => next())
+      .catch(_ => next());
   } else {
     next();
   }
