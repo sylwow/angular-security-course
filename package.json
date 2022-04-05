@@ -17,7 +17,7 @@
     "jwt-check-hs256": "node ./demos/jwt-check-hs256.js",
     "jwt-rs256": "node ./demos/jwt-rs256.js",
     "jwt-check-rs256": "node ./demos/jwt-check-rs256.js",
-    "csrf-server": "./node_modules/.bin/http-server -c-1 .",
+    "csrf-server": "http-server -c-1 .",
     "build": "ng build",
     "test": "ng test",
     "lint": "ng lint",
