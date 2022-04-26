@@ -1,5 +1,5 @@
 
-import { filter } from 'rxjs/operators';
+import { filter, shareReplay, tap } from 'rxjs/operators';
 import { Injectable } from '@angular/core';
 import { HttpClient } from "@angular/common/http";
 import { Observable, BehaviorSubject } from "rxjs";
@@ -27,19 +27,30 @@ export class AuthService {
         clientID: AUTH_CONFIG.clientID,
         domain: AUTH_CONFIG.domain,
         responseType: 'token id_token',
-        redirectUri: 'https://localhost:4200/lessons'
+        redirectUri: 'https://localhost:4200/lessons',
+        scope: 'openid email'
     });
 
-    constructor(private http: HttpClient, private router: Router) {
+    private subject = new BehaviorSubject<User>(undefined);
 
+    user$ = this.subject.pipe(filter(u => !!u));
+
+    constructor(private http: HttpClient, private router: Router) {
+        if (this.isLoggedIn()) {
+            this.userInfo();
+        }
     }
 
     login() {
-        this.auth0.authorize();
+        this.auth0.authorize({
+            initialScreen: 'login'
+        });
     }
 
     signUp() {
-        this.auth0.authorize();
+        this.auth0.authorize({
+            initialScreen: 'signup'
+        });
     }
 
     logout() {
@@ -59,11 +70,16 @@ export class AuthService {
 
                 this.setSession(result);
 
-                this.auth0.client.userInfo(result.accessToken, (err, userProfile) => {
-                    console.log(userProfile);
-                });
+                this.userInfo();
             }
         });
+    }
+
+    private userInfo() {
+        this.http.put<User>('/api/userinfo', null).pipe(
+            shareReplay(),
+            tap(u => this.subject.next(u))
+        ).subscribe();
     }
 
     private setSession(result: any) {
