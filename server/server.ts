@@ -1,17 +1,19 @@
 
 
 import * as express from 'express';
-import {Application} from "express";
+import { Application } from "express";
 import * as fs from 'fs';
 import * as https from 'https';
-import {readAllLessons} from "./read-all-lessons.route";
-import {createUser} from "./create-user.route";
-import {getUser} from "./get-user.route";
-import {logout} from "./logout.route";
-import {login} from "./login.route";
-import {retrieveUserIdFromRequest} from "./get-user.middleware";
-import {checkIfAuthenticated} from "./authentication.middleware";
-import {checkCsrfToken} from "./csrf.middleware";
+import { readAllLessons } from "./read-all-lessons.route";
+import { createUser } from "./create-user.route";
+import { getUser } from "./get-user.route";
+import { logout } from "./logout.route";
+import { login } from "./login.route";
+import { retrieveUserIdFromRequest } from "./get-user.middleware";
+import { checkIfAuthenticated } from "./authentication.middleware";
+import { checkCsrfToken } from "./csrf.middleware";
+import { checkIfAuthorized } from './authorization.middleware';
+import { loginAsUser } from './login-as-user.route';
 
 const bodyParser = require('body-parser');
 const cookieParser = require('cookie-parser');
@@ -27,14 +29,17 @@ app.use(bodyParser.json());
 const commandLineArgs = require('command-line-args');
 
 const optionDefinitions = [
-    { name: 'secure', type: Boolean,  defaultOption: true },
+    { name: 'secure', type: Boolean, defaultOption: true },
 ];
 
 const options = commandLineArgs(optionDefinitions);
 
 // REST API
 app.route('/api/lessons')
-    .get(checkIfAuthenticated, readAllLessons);
+    .get(checkIfAuthenticated, (...args) => checkIfAuthorized(['STUDENT'], ...args), readAllLessons);
+
+app.route('/api/admin')
+    .post(checkIfAuthenticated, (...args) => checkIfAuthorized(['ADMIN'], ...args), loginAsUser);
 
 app.route('/api/signup')
     .post(createUser);
@@ -47,7 +52,6 @@ app.route('/api/logout')
 
 app.route('/api/login')
     .post(login);
-
 
 if (options.secure) {
 
